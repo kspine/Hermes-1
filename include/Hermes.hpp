@@ -2,6 +2,7 @@
 
 #ifdef _WIN32
 #include <WinSock2.h>
+#include <Windows.h>
 #define UNUSED(x) __pragma(warning(suppress : 4100)) x
 #else
 #include <arpa/inet.h>
@@ -30,6 +31,10 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#ifdef _WIN32
+#pragma comment(lib, "ws2_32.lib")
+#endif  // _WIN32
 
 namespace hermes {
 
