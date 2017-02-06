@@ -3,44 +3,50 @@ sudo: true
 language: cpp
 
 compiler:
-  - clang
   - gcc
 
 os:
   - linux
-  - osx
+
+env:
+    global:
+        - CMAKE_VERSION="cmake-3.4.0-Linux-x86_64"
+        - CMAKE_BINARY="${CMAKE_VERSION}/bin/cmake"
 
 addons:
     apt:
         sources:
+            - llvm-toolchain-precise-3.7
             - ubuntu-toolchain-r-test
-
         packages:
-            - gcc-4.8
-            - g++-4.8
-            - clang
+            - g++-5
+            - gcc-5
             - wget
 
 before_install:
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo -H apt-get install valgrind libcurl4-openssl-dev; fi
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo -H pip install codecov; fi
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 --enable-cxx; fi
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install g++48 llvm --with-clang; fi
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install valgrind; fi
+    - wget https://cmake.org/files/v3.4/cmake-3.4.0-Linux-x86_64.tar.gz --no-check-certificate
+    - tar -xzvf cmake-3.4.0-Linux-x86_64.tar.gz
+    - sudo apt-get install valgrind libcurl4-openssl-dev
+    - sudo pip install codecov
+
 
 install:
-    - if [ "CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 90
 
 before_script:
-    - cmake --version
+    - echo $CC
+    - echo $CXX
+    - $CXX --version
+    - $CC --version
+    - ${CMAKE_BINARY} --version
 
 
 script:
-    - cmake .
+    - ${CMAKE_BINARY} .
     - make
     - valgrind ./tests_hermes
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gcov-5 tests/unix/main.cpp; fi
+    - gcov-5 tests/unix/main.cpp
 
 after_success:
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash <(curl -s https://codecov.io/bash); fi
+    - bash <(curl -s https://codecov.io/bash)
