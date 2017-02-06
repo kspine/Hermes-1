@@ -22,15 +22,16 @@ addons:
             - wget
 
 before_install:
-    - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo apt-get install valgrind libcurl4-openssl-dev; fi
-    - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo pip install codecov; fi
-    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew update; fi
-    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install gcc48 --enable-cxx; fi
-    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install g++48 llvm --with-clang; fi
-    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install valgrind; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install valgrind libcurl4-openssl-dev; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo pip install codecov; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install gcc48 --enable-cxx; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install g++48 llvm --with-clang; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install valgrind; fi
 
 install:
-    - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 90; fi
+    - if [ "CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 90; fi
 
 before_script:
     - cmake --version
@@ -40,7 +41,7 @@ script:
     - cmake .
     - make
     - valgrind ./tests_hermes
-    - if [[ $TRAVIS_OS_NAME == "linux"]]; then gcov-5 tests/unix/main.cpp; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then gcov-5 tests/unix/main.cpp; fi
 
 after_success:
-    - if [[TRAVIS_OS_NAME == "linux"]]; then bash <(curl -s https://codecov.io/bash); fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then bash <(curl -s https://codecov.io/bash); fi
