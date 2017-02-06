@@ -5,6 +5,10 @@
 using namespace hermes;
 using namespace hermes::network;
 
+void display(const std::string &to_display) {
+  std::cout << logger::info() + to_display + " [\x1b[32;1mOK\x1b[0m]\n";
+}
+
 //
 // Tests: Event.
 //
@@ -21,6 +25,7 @@ TEST_CASE("Event model tests", "[model][event]") {
     CHECK(event.pollfd_.fd == -1);
     CHECK(event.pollfd_.events == 0);
     CHECK(event.pollfd_.revents == 0);
+    display("[Event model] Testing empty event model");
   }
 
   SECTION("Should correctly set the specified event to monitor") {
@@ -57,6 +62,7 @@ TEST_CASE("Event model tests", "[model][event]") {
 
     event.reset_poll_struct();
     event.on_receive_.callback = nullptr;
+    display("[Event model] Testing monitored event");
   }
 }
 
@@ -84,6 +90,7 @@ TEST_CASE("Poll model tests", "[model][poll]") {
     poller->remove<tcp::socket>(socket);
     REQUIRE(poller->has<tcp::socket>(socket) == false);
   }
+  display("[Poll model] Testing default behavior");
 }
 
 //
@@ -97,6 +104,7 @@ TEST_CASE("Workers tests", "[tools][workers]") {
 
     workers.stop();
     THEN("Should stop working") { CHECK(!workers.are_working()); }
+    display("[Workers] Testing construction");
   }
 
   SECTION("Should process the enqueued jobs correctly") {
@@ -111,6 +119,7 @@ TEST_CASE("Workers tests", "[tools][workers]") {
 
     workers.stop();
     THEN("Should stop working") { CHECK(!workers.are_working()); }
+    display("[Workers] Testing enqueue");
   }
 }
 
@@ -130,15 +139,17 @@ TEST_CASE("TCP socket tests", "[network][tcp][socket][default]") {
     THEN("The two default TCP sockets should be equal") {
       CHECK(socket1 == socket2);
     }
+    display("[TCP socket] Testing default socket");
   }
 
-  SECTION("Default TCP socket should have default behaviour") {
+  SECTION("Default TCP socket should have default behavior") {
     tcp::socket socket;
 
     REQUIRE_THROWS_AS(socket.listen(), std::logic_error);
     REQUIRE_THROWS_AS((void)socket.accept(), std::logic_error);
     REQUIRE_THROWS_AS((void)socket.send(""), std::logic_error);
     REQUIRE_THROWS_AS((void)socket.receive(1024), std::logic_error);
+    display("[TCP socket] Testing default behavior");
   }
 }
 
@@ -163,6 +174,7 @@ TEST_CASE("TCP socket tests server operations",
 
     REQUIRE_NOTHROW(socket1.close());
     THEN("Should be equal to socket2") { CHECK(socket1 == socket2); }
+    display("[TCP socket] Testing bind");
   }
 
   SECTION("Should mark the socket as passive") {
@@ -183,6 +195,7 @@ TEST_CASE("TCP socket tests server operations",
       CHECK(socket.get_fd() == -1);
       CHECK(!socket.has_a_name_assigned());
     }
+    display("[TCP socket] Testing listen");
   }
 
   SECTION("Should accept a new connection") {
@@ -207,6 +220,7 @@ TEST_CASE("TCP socket tests server operations",
 
     REQUIRE_NOTHROW(server.join());
     REQUIRE_NOTHROW(client.join());
+    display("[TCP socket] Testing accept");
   }
 }
 
@@ -238,6 +252,7 @@ TEST_CASE("TCP socket tests client operations",
 
     REQUIRE_NOTHROW(server.join());
     REQUIRE_NOTHROW(client.join());
+    display("[TCP socket] Testing send/receive data");
   }
 }
 
@@ -245,16 +260,17 @@ TEST_CASE("TCP socket tests client operations",
 // Tests: TCP server/client.
 //
 TEST_CASE("TCP server/client tests", "[network][tcp][server][client]") {
-  SECTION("Default TCP server should have default behaviour") {
+  SECTION("Default TCP server should have default behavior") {
     tcp::server server;
 
     CHECK(!server.is_running());
     CHECK(server.get_socket().get_fd() == -1);
     CHECK(!server.get_socket().has_a_name_assigned());
     CHECK_THROWS_AS(server.run("127.0.0.1", 27017), std::invalid_argument);
+    display("[TCP server] Testing default behavior");
   }
 
-  SECTION("Default TCP client should have default behaviour") {
+  SECTION("Default TCP client should have default behavior") {
     tcp::client client;
 
     CHECK(!client.is_connected());
@@ -262,6 +278,7 @@ TEST_CASE("TCP server/client tests", "[network][tcp][server][client]") {
     CHECK(!client.get_socket().has_a_name_assigned());
     CHECK_THROWS_AS(client.async_send("", nullptr), std::logic_error);
     CHECK_THROWS_AS(client.async_receive(1024, nullptr), std::logic_error);
+    display("[TCP client] Testing default behavior");
   }
 
   SECTION("Should correctly send and receive data") {
@@ -296,6 +313,7 @@ TEST_CASE("TCP server/client tests", "[network][tcp][server][client]") {
 
     REQUIRE_NOTHROW(thread_server.join());
     REQUIRE_NOTHROW(thread_client.join());
+    display("[TCP server/client] Testing general behavior");
   }
 }
 
@@ -315,15 +333,17 @@ TEST_CASE("UDP socket tests", "[network][udp][socket][default]") {
     THEN("The two default UDP sockets should be equal") {
       CHECK(socket1 == socket2);
     }
+    display("[UDP socket] Testing default socket");
   }
 
-  SECTION("Default UDP socket should have default behaviour") {
+  SECTION("Default UDP socket should have default behavior") {
     udp::socket socket;
     std::vector<char> buffer;
 
     REQUIRE_THROWS_AS((void)socket.sendto(""), std::logic_error);
     REQUIRE_THROWS_AS((void)socket.broadcast(""), std::logic_error);
     REQUIRE_THROWS_AS((void)socket.recvfrom(buffer), std::logic_error);
+    display("[UDP socket] Testing default behavior");
   }
 
   SECTION("Should initialize a default datagram socket") {
@@ -345,6 +365,7 @@ TEST_CASE("UDP socket tests", "[network][udp][socket][default]") {
       CHECK(socket1.get_fd() == -1);
       CHECK(socket1 == socket2);
     }
+    display("[UDP socket] Testing initialization");
   }
 
   SECTION(
@@ -368,6 +389,7 @@ TEST_CASE("UDP socket tests", "[network][udp][socket][default]") {
       CHECK(socket1.get_fd() == -1);
       CHECK(socket1 == socket2);
     }
+    display("[UDP socket] Testing initialization broadcasting mode");
   }
 
   SECTION("Should initialize and bind a default datagram socket") {
@@ -389,6 +411,7 @@ TEST_CASE("UDP socket tests", "[network][udp][socket][default]") {
       CHECK(socket1.get_fd() == -1);
       CHECK(socket1 == socket2);
     }
+    display("[UDP socket] Testing bind");
   }
 }
 
@@ -420,6 +443,7 @@ TEST_CASE("UDP socket tests sending/broadcasting/receiving data.",
 
     REQUIRE_NOTHROW(server.join());
     REQUIRE_NOTHROW(client.join());
+    display("[UDP socket] Testing send/broadcast/receive data");
   }
 }
 
@@ -427,21 +451,23 @@ TEST_CASE("UDP socket tests sending/broadcasting/receiving data.",
 // Tests: UDP server/client.
 //
 TEST_CASE("UDP server/client tests", "[network][udp][server][client]") {
-  SECTION("Default UDP server should have default behaviour") {
+  SECTION("Default UDP server should have default behavior") {
     udp::server server;
 
     CHECK(!server.is_running());
     CHECK(server.get_socket().get_fd() == -1);
     CHECK(!server.get_socket().has_a_name_assigned());
     REQUIRE_THROWS_AS(server.async_recvfrom(nullptr), std::logic_error);
+    display("[UDP server] Testing default server");
   }
 
-  SECTION("Default UDP client should have default behaviour") {
+  SECTION("Default UDP client should have default behavior") {
     udp::client client;
 
     CHECK(client.get_socket().get_fd() == -1);
     CHECK(!client.get_socket().has_a_name_assigned());
     CHECK(!client.broadcast_mode_enabled());
+    display("[UDP client] Testing default client");
   }
 
   SECTION("Should correctly send and receive data") {
@@ -479,5 +505,6 @@ TEST_CASE("UDP server/client tests", "[network][udp][server][client]") {
 
     REQUIRE_NOTHROW(thread_server.join());
     REQUIRE_NOTHROW(thread_client.join());
+    display("[UDP server/client] Testing general behavior");
   }
 }
