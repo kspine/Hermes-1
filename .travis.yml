@@ -22,15 +22,12 @@ addons:
             - wget
 
 before_install:
-  if [[ $TRAVIS_OS_NAME == "linux"]]; then
-    - sudo apt-get install valgrind libcurl4-openssl-dev
-    - sudo pip install codecov
-  else
-    - brew update
-    - brew install gcc48 --enable-cxx
-    - brew install g++48 llvm --with-clang
-    - brew install valgrind
-  fi
+    - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo apt-get install valgrind libcurl4-openssl-dev; fi
+    - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo pip install codecov; fi
+    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew update; fi
+    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install gcc48 --enable-cxx; fi
+    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install g++48 llvm --with-clang; fi
+    - if [[ $TRAVIS_OS_NAME == "osx"]]; then brew install valgrind; fi
 
 install:
     - if [[ $TRAVIS_OS_NAME == "linux"]]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 90; fi
@@ -46,4 +43,4 @@ script:
     - if [[ $TRAVIS_OS_NAME == "linux"]]; then gcov-5 tests/unix/main.cpp; fi
 
 after_success:
-    - if [[TRAVIS_OS_NAME == "linux"]]; then bash <(curl -s https://codecov.io/bash) fi
+    - if [[TRAVIS_OS_NAME == "linux"]]; then bash <(curl -s https://codecov.io/bash); fi
